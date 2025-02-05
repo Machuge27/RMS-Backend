@@ -10,7 +10,10 @@ import LoadingIndicator from "../Components/boxes/Loader";
 const LoginPage = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [errorMessage, setErrorMessage] = useState(null);
+  const [message, setMessage] = useState({
+    message: "",
+    type: "error",
+  });
   const [email, setEmail] = useState("");
   const [is_admin, setIsAdmin] = useState(false);
   const [visible, setVisible] = useState(false);
@@ -21,10 +24,14 @@ const LoginPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setVisible(false);
-    setLoading(true);
-
+    if (!username || !password || (is_admin && !email)) {
+      setMessage({ message: "Please fill all required fields!", type: "warning" });
+      setVisible(true);
+      return;
+    }
+    
     try {
+      setLoading(true);
       if (is_admin) {
         // Handle 2FA flow for admin
         const res = await api.post("/api/admin/2fa/send-code", { email });
@@ -33,7 +40,10 @@ const LoginPage = () => {
           navigate("/admin-verify-2fa", { state: { email } });
         } else {
           setLoading(false);
-          setErrorMessage("Failed to send 2FA code. Please try again.");
+          setMessage({
+            message: res.data.detail || "An error occurred! Please try again later.",
+            type: "error",
+          })
           setVisible(true);
         }
         return;
@@ -60,26 +70,44 @@ const LoginPage = () => {
       // Navigate based on role
       console.log(res.data.isAdmin);
       if (res.data.isAdmin) {
-        navigate("/admin");
+        setTimeout(() => {
+          setMessage({
+            message: "Login successful! Redirecting...",
+            type: "success",
+          })
+          setVisible(true);
+          navigate("/admin");
+        }, 1500);
       } else if (!res.data.isAdmin) {
+        setMessage({
+          message: "Login successful! Redirecting...",
+          type: "success",
+        })
+        setTimeout(setVisible(true), 1500);
         navigate("/tenant");
       } else {
-        setErrorMessage("Invalid role. Please contact support.");
+        setMessage({
+          message: "An error occurred! Please try again later.",
+          type: "error",
+        })
       }
     } catch (error) {
       console.error(error);
       setLoading(false);
       if (error.response) {
-        setErrorMessage(
-          error.response.data.detail || "An error occurred! Please try again later."
-        );
+        setMessage({
+          message : error.response.data.detail || "An error occurred! Please try again later.",
+          type: "error",
+        });
       } else if (error.request) {
-        setErrorMessage(
+        setMessage(
           "No response received from the server. Please check your network connection."
         );
       } else {
-        setErrorMessage("An error occurred while setting up the request. Please try again later.");
+        setMessage("An error occurred while setting up the request. Please try again later.");
       }
+      setVisible(true);
+    } finally {
       setVisible(true);
     }
   };
@@ -89,10 +117,10 @@ const LoginPage = () => {
       <div className="login-box">
         <h2>Login</h2>
         <form onSubmit={handleSubmit}>
-          <div className="chkbox">
+          {/* <div className="chkbox">
             <label htmlFor="who">Login as admin: </label>
             <input type="checkbox" className="check" checked={is_admin} onChange={(e) => setIsAdmin(e.target.checked)} />
-          </div>
+          </div> */}
           {!is_admin ? (
             <>
               <div className="input-group">
@@ -150,14 +178,14 @@ const LoginPage = () => {
           <a href="/" className="forgot-password">
             Go home...
           </a>
+        </div>
           {visible && (
             <ErrorBox
-              message={errorMessage || "An error occurred! Please try again later."}
-              type="error"
+              message={message.message || "An error occurred! Please try again later."}
+              type={message.type || "error"}
               onClose={() => setVisible(false)}
             />
           )}
-        </div>
       </div>
     </div>
   );

@@ -10,7 +10,7 @@
     border-radius: 0.5rem;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Add some shadow for depth */
     max-width: 300px; /* Ensure a max width for smaller screens */
-    margin: 0 auto; /* Center the greeting */
+    margin: 0 auto 2rem; /* Center the greeting */
   }
   
   .greeting span {

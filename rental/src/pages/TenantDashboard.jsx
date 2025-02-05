@@ -36,7 +36,7 @@ const TenantDashboard = () => {
     },
     { 
       id: 'account', 
-      label: 'Account', 
+      label: 'Profile', 
       icon: <User size={20} />,
       component: Account 
     },

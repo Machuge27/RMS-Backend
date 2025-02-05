@@ -2,9 +2,9 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { X } from 'lucide-react'
-import '../boxes/ErrorBox'; // For styling (optional)
+import '../../css/boxes/ErrorBox.css'
 
-const ErrorBox = ({ message, type = 'error', onClose }) => {
+const ErrorBox = ({ message, type , onClose }) => {
     const boxStyles = {
         error: { backgroundColor: '#ffdddd', borderColor: '#f44336', color: '#d32f2f' },
         warning: { backgroundColor: '#fff8e1', borderColor: '#ff9800', color: '#f57c00' },
@@ -15,7 +15,7 @@ const ErrorBox = ({ message, type = 'error', onClose }) => {
     const style = boxStyles[type] || boxStyles.error;
 
     return (
-        <div className='error-box' style={{ ...style, padding: '.3rem', marginTop: '1.5rem', border: '1px solid', borderRadius: '5px', position: 'relative' }}>
+        <div className='error-box' style={{ ...style }}>
             {onClose && (
                 <div
                     onClick={onClose}
@@ -27,7 +27,7 @@ const ErrorBox = ({ message, type = 'error', onClose }) => {
                     <X />
                 </div>
             )}
-            <span>{message}</span>
+            <span className='message'>{message}</span>
         </div>
     );
 };

@@ -1,181 +1,191 @@
-import React, { useState } from 'react';
-import { ChevronRight, ChevronLeft } from 'lucide-react';
+import React, { useState } from "react";
 import "../css/Account.css";
+import { useAuth } from "../Components/admin/AuthProvider";
+import { User, CreditCard, BellIcon } from "lucide-react";
 
 function Account() {
-  const [activeSection, setActiveSection] = useState('calendar');
-
-  return (
-    
-      <><CalendarSection /></>
-  );
-}
-
-
-function CalendarSection() {
-  const [currentDate, setCurrentDate] = useState(new Date());
-  const [events, setEvents] = useState([
-    {
-      id: 1,
-      title: 'Rent Due',
-      date: '2024-02-01',
-      type: 'payment'
-    },
-    {
-      id: 2,
-      title: 'Maintenance Inspection',
-      date: '2024-02-15',
-      type: 'maintenance'
-    }
-  ]);
-
+  const { user } = useAuth();
+  const [profilePicture, setProfilePicture] = useState(null);
+  const [isEditing, setIsEditing] = useState(false);
   const [tenantInfo, setTenantInfo] = useState({
-    name: 'John Doe',
-    apartmentNumber: '305',
-    moveInDate: '2023-06-15',
-    rentAmount: 1500,
-    rentDueDate: '1st of each month',
-    leaseEndDate: '2024-06-15'
+    username: "JohnDoe",
+    name: "John Doe",
+    apartmentNumber: "305",
+    moveInDate: "2023-06-15",
+    leaseEndDate: "2024-06-15",
+    email: "john.doe@example.com",
+    phone: "123-456-7890",
   });
 
-  // Calculate tenant's stay duration
-  const calculateStayDuration = () => {
-    const moveIn = new Date(tenantInfo.moveInDate);
-    const today = new Date();
-    const diffTime = Math.abs(today - moveIn);
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    
-    const years = Math.floor(diffDays / 365);
-    const months = Math.floor((diffDays % 365) / 30);
-    const days = diffDays % 30;
+  const [balances, setBalances] = useState({
+    rentBalance: 1500,
+    notifications: 5
+  });
 
-    return `${years} years, ${months} months, ${days} days`;
+  const [editableInfo, setEditableInfo] = useState({
+    name: tenantInfo.name,
+    email: tenantInfo.email,
+    phone: tenantInfo.phone,
+    moveInDate: tenantInfo.moveInDate,
+    leaseEndDate: tenantInfo.leaseEndDate,
+  });
+
+  const handleProfilePictureChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setProfilePicture(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
-  // Generate calendar days
-  const generateCalendarDays = () => {
-    const daysInMonth = new Date(
-      currentDate.getFullYear(), 
-      currentDate.getMonth() + 1, 
-      0
-    ).getDate();
-    
-    const firstDayOfMonth = new Date(
-      currentDate.getFullYear(), 
-      currentDate.getMonth(), 
-      1
-    ).getDay();
-
-    const calendarDays = [];
-
-    // Add empty days before first day of month
-    for (let i = 0; i < firstDayOfMonth; i++) {
-      calendarDays.push(null);
-    }
-
-    // Add days of month
-    for (let day = 1; day <= daysInMonth; day++) {
-      const fullDate = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-      const dayEvents = events.filter(event => event.date === fullDate);
-      calendarDays.push({
-        day,
-        events: dayEvents
-      });
-    }
-
-    return calendarDays;
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setEditableInfo({ ...editableInfo, [name]: value });
   };
 
-  const monthNames = [
-    'January', 'February', 'March', 'April', 'May', 'June',
-    'July', 'August', 'September', 'October', 'November', 'December'
-  ];
-
-  const calendarDays = generateCalendarDays();
+  const saveDetails = () => {
+    setTenantInfo((prev) => ({ ...prev, ...editableInfo }));
+    setIsEditing(false);
+  };
 
   return (
-      <div className="rental-calendar">
-        <div className="tenant-info">
-          <h2>Tenant Information</h2>
-          <div className="tenant-details">
-            <p><strong>Name:</strong> {tenantInfo.name}</p>
-            <p><strong>Apartment:</strong> {tenantInfo.apartmentNumber}</p>
-            <p><strong>Move-in Date:</strong> {tenantInfo.moveInDate}</p>
-            <p><strong>Lease End Date:</strong> {tenantInfo.leaseEndDate}</p>
-            <p><strong>Stay Duration:</strong> {calculateStayDuration()}</p>
-            <p><strong>Monthly Rent:</strong> ${tenantInfo.rentAmount}</p>
-            <p><strong>Rent Due:</strong> {tenantInfo.rentDueDate}</p>
+    <div className="account-page-container">
+      <div className="profile-section">
+        <div className="profile-picture-container">
+          <input 
+            type="file" 
+            id="profile-picture-upload" 
+            accept="image/*" 
+            onChange={handleProfilePictureChange}
+            className="profile-picture-input"
+          />
+          <label htmlFor="profile-picture-upload" className="profile-picture-label">
+            {profilePicture ? (
+              <img src={profilePicture} alt="Profile" className="profile-picture" />
+            ) : (
+              <div className="profile-picture-placeholder">
+                <User size={80} />
+                <span>Upload Photo</span>
+              </div>
+            )}
+          </label>
+        </div>
+        <h2 className="account-title">{tenantInfo.name}</h2>
+      </div>
+
+      <div className="balance-cards-container">
+        <div className="balance-card rent-balance">
+          <CreditCard />
+          <div className="balance-details">
+            <h3>Rent Balance</h3>
+            <p>Ksh: {user?.userdata?.balance}</p>
           </div>
         </div>
-
-        <div className="calendar-container">
-        <div className="calendar-header">
-          <button 
-            onClick={() => {
-              const newDate = new Date(currentDate);
-              newDate.setMonth(newDate.getMonth() - 1);
-              setCurrentDate(newDate);
-            }}
-          >
-            <ChevronLeft />
-          </button>
-          <h2>
-            {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
-          </h2>
-          <button 
-            onClick={() => {
-              const newDate = new Date(currentDate);
-              newDate.setMonth(newDate.getMonth() + 1);
-              setCurrentDate(newDate);
-            }}
-          >
-            <ChevronRight />
-          </button>
-        </div>
-
-        <div className="calendar-grid">
-          {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-            <div key={day} className="calendar-weekday">{day}</div>
-          ))}
-
-          {calendarDays.map((dayItem, index) => {
-            const isToday = dayItem && new Date().toDateString() === new Date(currentDate.getFullYear(), currentDate.getMonth(), dayItem.day).toDateString();
-            return (
-              <div 
-                key={index} 
-                className={`calendar-day ${dayItem ? 'active' : 'inactive'} ${isToday ? 'today' : ''}`}>
-                {dayItem && (
-                  <>
-                    <span className="day-number">{dayItem.day}</span>
-                    {dayItem.events.map(event => (
-                      <div 
-                        key={event.id} 
-                        className={`event ${event.type}`}
-                      >
-                        {event.title}
-                      </div>
-                    ))}
-                  </>
-                )}
-              </div>
-            );
-          })}
+        <div className="balance-card rent-balance">
+          <BellIcon />
+          <div className="balance-details">
+            <h3>Notifications</h3>
+            <p>{balances.notifications }</p>
+          </div>
         </div>
       </div>
-  
-        <div className="events-list">
-          <h2>Upcoming Events</h2>
-          {events.map(event => (
-            <div key={event.id} className={"event-item `${event.type}`"}>
-              <span className="event-date">{event.date}</span>
-              <span className="event-title">{event.title}</span>
-            </div>
-          ))}
+
+      <div className="account-details-card">
+        <div className="detail-item">
+          <span className="label">Username:</span>
+          <span className="value">{tenantInfo.username}</span>
         </div>
-        
+        <div className="detail-item">
+          <span className="label">Name:</span>
+          {isEditing ? (
+            <input
+              type="text"
+              name="name"
+              value={editableInfo.name}
+              onChange={handleChange}
+            />
+          ) : (
+            <span className="value">{tenantInfo.name}</span>
+          )}
+        </div>
+        <div className="detail-item">
+          <span className="label">Apartment Number:</span>
+          <span className="value">{tenantInfo.apartmentNumber}</span>
+        </div>
+        <div className="detail-item">
+          <span className="label">Email:</span>
+          {isEditing ? (
+            <input
+              type="email"
+              name="email"
+              value={editableInfo.email}
+              onChange={handleChange}
+            />
+          ) : (
+            <span className="value">{tenantInfo.email}</span>
+          )}
+        </div>
+        <div className="detail-item">
+          <span className="label">Phone:</span>
+          {isEditing ? (
+            <input
+              type="tel"
+              name="phone"
+              value={editableInfo.phone}
+              onChange={handleChange}
+            />
+          ) : (
+            <span className="value">{tenantInfo.phone}</span>
+          )}
+        </div>
+        <div className="detail-item">
+          <span className="label">Move-in Date:</span>
+          {isEditing ? (
+            <input
+              type="date"
+              name="moveInDate"
+              value={editableInfo.moveInDate}
+              onChange={handleChange}
+            />
+          ) : (
+            <span className="value">{tenantInfo.moveInDate}</span>
+          )}
+        </div>
+        <div className="detail-item">
+          <span className="label">Lease End Date:</span>
+          {isEditing ? (
+            <input
+              type="date"
+              name="leaseEndDate"
+              value={editableInfo.leaseEndDate}
+              onChange={handleChange}
+            />
+          ) : (
+            <span className="value">{tenantInfo.leaseEndDate}</span>
+          )}
+        </div>
+        <div className="button-container">
+          {isEditing ? (
+            <>
+              <button className="save-btn" onClick={saveDetails}>
+                Save
+              </button>
+              <button className="cancel-btn" onClick={() => setIsEditing(false)}>
+                Cancel
+              </button>
+            </>
+          ) : (
+            <button className="edit-btn" onClick={() => setIsEditing(true)}>
+              Edit
+            </button>
+          )}
+        </div>
       </div>
+    </div>
   );
 }
 
 export default Account;
-

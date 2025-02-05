@@ -1,7 +1,7 @@
 // AboutUs.js
 import React from "react";
 import "../../css/boxes/Us.css"; // For styling the component
-import logo from "../../assets/Logo.jpg"; // Add your logo here
+import logo from "../../assets/Logo002.jpg"; // Add your logo here
 
 const AboutUs = () => {
   return (
@@ -27,18 +27,23 @@ const AboutUs = () => {
         <h2>Connect With Us</h2>
         <ul>
           <li>
+            <a href="http://soltechssolutions.com" target="_blank" rel="noopener noreferrer">
+              Official website <span>|</span>
+            </a>
+          </li>
+          <li>
             <a href="https://facebook.com/soltech" target="_blank" rel="noopener noreferrer">
-              Facebook
+              Facebook <span>|</span>
             </a>
           </li>
           <li>
             <a href="https://twitter.com/soltech" target="_blank" rel="noopener noreferrer">
-              Twitter
+              Twitter <span>|</span>
             </a>
           </li>
           <li>
             <a href="https://linkedin.com/company/soltech" target="_blank" rel="noopener noreferrer">
-              LinkedIn
+              LinkedIn 
             </a>
           </li>
         </ul>
