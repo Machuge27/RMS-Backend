@@ -53,7 +53,7 @@ class CreateUserView(generics.CreateAPIView):
     
 class AddTenant(generics.CreateAPIView):
     queryset = Tenant.objects.all()
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
     serializer_class = TenantSerializer
     
 
@@ -231,4 +231,21 @@ class NotificationsAndMessages(generics.CreateAPIView):
         
         print("Notifications", request.user)
         
+
+class TenantData(generics.CreateAPIView):
+    
+    
+    def get(self, request, *args, **kwargs):
+        queryset = Tenant.objects.all()
+        permission_classes = [IsAuthenticated]
+        serializer_class = TenantSerializer
         
+        tenantData = Tenant.objects.all()
+        
+        data = {
+            "username": request.user.username,
+            "email": request.user.email,
+            "is_Admin": request.user.is_Admin,
+            "balance": request.user.tenant.balance if hasattr(request.user, 'tenant') else 0,
+        }
+        return Response(data, status=status.HTTP_200_OK)

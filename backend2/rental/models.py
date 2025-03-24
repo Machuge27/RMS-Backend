@@ -41,6 +41,7 @@ class Room(models.Model):
 
 class Tenant(User):
     room = models.ForeignKey(Room, on_delete=models.CASCADE, default=1)
+    balance = models.FloatField(default=0)
 
 # Payment model with ForeignKey to Tenant and Room
 class Payment(models.Model):

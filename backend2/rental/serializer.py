@@ -21,6 +21,11 @@ class RoomSerializer(serializers.ModelSerializer):
     class Meta:
         model=Room
         fields='__all__'           
+
+class TenantDataSerializer(serializers.ModelSerializer):
+    class Meta:
+        model=Tenant
+        fields='__all__'           
         
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     @classmethod
@@ -71,6 +76,16 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
                 'buildings':buildings,
             })
             print(data)
+            return data
+        
+        tenantObj = Tenant.objects.filter(username=user)
+        balance = TenantDataSerializer(tenantObj, many=True).data
+        print("balance", balance)
+        data.update({
+            'isAdmin':user.is_Admin,
+            'username':user.username,
+            'balance': balance,
+        })    
         
         return data
 
@@ -102,6 +117,7 @@ class TenantSerializer(serializers.ModelSerializer):
     #     if not Room.objects.filter(pk=value.id if isinstance(value, Room) else value).exists():
     #         raise serializers.ValidationError(f"Room with id '{value}' does not exist.")
     #     return value
+
 
 
 class NotificationSerializer(serializers.ModelSerializer):
